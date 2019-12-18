@@ -9,6 +9,8 @@ import (
 
 func main() {
 	readTokenFile()
+	MakeBookRequest("TM")
+	MakeBookRequest("F")
 	MakeBookRequest("GE")
 }
 
@@ -32,16 +34,24 @@ func MakeBookRequest(symbol string) {
 		log.Fatalln(err)
 	}
 
-	//body, err := ioutil.ReadAll(resp.Body)
 	body, _ := ioutil.ReadAll(resp.Body)
+
 	var result map[string]interface{}
+
 	json.Unmarshal([]byte(body), &result)
-	log.Println(result["quote"])
+
+	b := result["quote"].(map[string]interface{})
+
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	//log.Println(string(body))
+	log.Println("The Company Name is: " + b["companyName"].(string))
+	log.Println("The ticker symbol is: " + symbol)
+	log.Println("The Primary Exchange this company belongs to is: " + b["primaryExchange"].(string))
+	log.Printf("The latest price is: %v\n", b["latestPrice"].(float64))
+	log.Printf("The previous closing price was: %v\n", b["previousClose"].(float64))
+	log.Println("")
 }
 
 var myToken string
@@ -54,18 +64,3 @@ func readTokenFile() {
 	myToken = string(dat)
 
 }
-
-type Message struct {
-	symbol          string
-	companyName     string
-	primaryExchange string
-	latestPrice     float64
-	previousClose   float64
-	change          float64
-}
-
-var M Message
-
-// func JSONtoMap(input string) {
-
-// }
