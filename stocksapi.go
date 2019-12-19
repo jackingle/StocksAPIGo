@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
 var message Message
@@ -15,28 +17,24 @@ func main() {
 
 	// MakeBookRequest("F")
 	//MakeBookRequest("T")
-
+	//JSONBookRequest("T")
 	http.HandleFunc("/stocks/", book_api)
+	http.HandleFunc("/json/", jsonbook_api)
 	http.ListenAndServe(":8000", nil)
 }
 
 func book_api(w http.ResponseWriter, r *http.Request) {
+	s := r.URL.RequestURI()
+	s = strings.SplitAfter(s, "/")[2]
 
-	keys, ok := r.URL.Query()["key"]
+	MakeBookRequest(s, w, r)
 
-	if !ok || len(keys[0]) < 1 {
-		log.Println("Url Param 'key' is missing")
-		return
-	}
-	key := keys[0]
-	// u, err := url.Parse("http://localhost:8000/stocks/?key=")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// s := strings.Split(u.RequestURI(), "/")[1]
-	log.Println(r.URL.RequestURI())
-	MakeBookRequest(string(key))
-	log.Println("Url Param 'key' is: " + string(key))
+}
+func jsonbook_api(w http.ResponseWriter, r *http.Request) {
+	s := r.URL.RequestURI()
+	s = strings.SplitAfter(s, "/")[2]
+
+	JSONBookRequest(s, w, r)
 
 }
 
@@ -54,16 +52,14 @@ func MakeRequest() {
 	log.Println(string(body))
 }
 
-func MakeBookRequest(symbol string) {
+func MakeBookRequest(symbol string, w http.ResponseWriter, r *http.Request) {
 	resp, err := http.Get("https://cloud.iexapis.com/v1/stock/" + symbol + "/book?token=" + myToken)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)
-
 	var result map[string]interface{}
-
 	json.Unmarshal([]byte(body), &result)
 	json.Unmarshal([]byte(body), &message)
 	b := result["quote"].(map[string]interface{})
@@ -74,8 +70,15 @@ func MakeBookRequest(symbol string) {
 	log.Printf("The latest price is: %v\n", b["latestPrice"].(float64))
 	log.Printf("The previous closing price was: %v\n", b["previousClose"].(float64))
 	log.Println("")
+	//
+	fmt.Fprint(w, "The Company Name is: "+b["companyName"].(string)+"\n")
+	fmt.Fprint(w, "The ticker symbol is: "+symbol+"\n")
+	fmt.Fprint(w, "The Primary Exchange this company belongs to is: "+b["primaryExchange"].(string)+"\n")
+	fmt.Fprintf(w, "The latest price is: %v\n", b["latestPrice"].(float64))
+	fmt.Fprintf(w, "The previous closing price was: %v\n", b["previousClose"].(float64))
+	fmt.Fprintln(w, "")
 }
-func JSONBookRequest(symbol string) {
+func JSONBookRequest(symbol string, w http.ResponseWriter, r *http.Request) {
 	resp, err := http.Get("https://cloud.iexapis.com/v1/stock/" + symbol + "/book?token=" + myToken)
 	if err != nil {
 		log.Fatalln(err)
@@ -85,8 +88,9 @@ func JSONBookRequest(symbol string) {
 
 	json.Unmarshal([]byte(body), &message)
 
-	//log.Println(message())
-
+	b, err := json.Marshal(message)
+	log.Println(string(b))
+	fmt.Fprint(w, string(b))
 }
 
 func readTokenFile() {
@@ -105,7 +109,6 @@ type Message struct {
 	Trades      Trades
 	SystemEvent SystemEvent
 }
-
 type Quote struct {
 	Symbol                string
 	CompanyName           string
