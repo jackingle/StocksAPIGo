@@ -15,5 +15,4 @@ Now the program can be run!
 This will initialize the webserver at http://localhost:8000
 
 Access the endpoint at http://localhost:8000/stocks/ and enter a stock ticker symbol at the end
-
 of the URI in order to obtain the latest stock price.
