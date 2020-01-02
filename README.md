@@ -11,6 +11,9 @@ Log into your IEX Cloud console and copy your API token to the dat file.
 Now the program can be run!
 ## Running the program
 `go run stocksapi.go`
+
 This will initialize the webserver at http://localhost:8000
+
 Access the endpoint at http://localhost:8000/stocks/ and enter a stock ticker symbol at the end
+
 of the URI in order to obtain the latest stock price.
