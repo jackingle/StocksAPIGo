@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 )
 
 var message Message
@@ -22,7 +21,6 @@ func main() {
 func bookAPI(w http.ResponseWriter, r *http.Request) {
 	s := r.URL.RequestURI()
 	s = strings.SplitAfter(s, "/")[2]
-
 	jsonBookRequest(s, w, r)
 
 }
@@ -41,8 +39,6 @@ func jsonBookRequest(symbol string, w http.ResponseWriter, r *http.Request) {
 	log.Println(string(b))
 	fmt.Fprint(w, string(b))
 	w.Write(b)
-	time.Sleep(15 * time.Second)
-	jsonBookRequest(symbol, w, r)
 }
 
 func readTokenFile() {
